@@ -19,11 +19,25 @@ if(!array_key_exists("To",$data)) die("Error, invalid entry.");
 if($data["AccountSid"] != $accountsid) die("Not a valid account sid.");
 if($data["To"] != $countrycode . $twilionumber) die("Invalid phone to message.");
 
-$slackperson = $data["From"]; // For future modification TO DO
+//Variables
+$slackperson = $data["From"];
+$userphone = $data["From"];
+while(strlen($userphone) >= 11)
+{
+    $userphone = substr($userphone, 1);
+}
+$contacturl = $connectwise . "/$cwbranch/apis/3.0/company/contacts?childconditions=communicationItems/value%20like%20%22" . $userphone . "%22";
+
+$contact = cURL($contacturl,$cwHeader);
+
+if ($contact != null) {
+    $contact = $contact[0];
+    $slackperson = $contact->firstName . " " . $contact->lastName . " (" . $data["From"] . ")";
+}
 
 $postfields = array(
         "channel" => "#" . $slackchannel,
-        "username" => $data["From"],
+        "username" => $slackperson,
         "text" => $data["Body"]
     );
 
