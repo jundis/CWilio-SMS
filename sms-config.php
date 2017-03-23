@@ -11,6 +11,8 @@ $apiprivatekey = "Connectwise Private Key"; //Private API key
 $smsslacktoken = "Token here"; //Set token from the Slack slash command screen.
 $timeoutfix = false; //Enable to fix any 3000ms response from Slack.
 $sendtimeoutwait = false; //Set to true to send a please wait message with every command. Only does something when $timeoutfix is set to true.
+$slackwebhook = "Webhook URL here"; //Set your Slack webhook URL here.
+$slackchannel = "sms"; //Channel that all communication will route through. No other channel will function for these commands.
 
 //Twilio Configuration
 $accountsid = "SID here"; //Find this on https://www.twilio.com/user/account/
