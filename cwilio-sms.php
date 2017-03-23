@@ -9,7 +9,7 @@ require_once 'sms-functions.php';
 
 if(empty($_GET['token']) || ($_GET['token'] != $smsslacktoken)) die("Slack token invalid."); //If Slack token is not correct, kill the connection. This allows only Slack to access the page for security purposes.
 if(empty($_GET['text'])) die("No text provided."); //If there is no text added, kill the connection.
-if($_GET['channel'] != $slackchannel) die("Invalid channel");
+if($_GET['channel_name'] != $slackchannel) die("Invalid channel");
 $exploded = explode(" ",$_GET['text']); //Explode the string attached to the slash command for use in variables.
 
 if(!is_numeric($exploded[0])) {
@@ -22,6 +22,8 @@ if(!is_numeric($exploded[0])) {
         // TO DO
     }
 }
+
+if(!array_key_exists(1,$exploded)) die("Not enough parameters, please include a number and a message");
 
 //Timeout Fix Block
 if($timeoutfix == true)
@@ -36,7 +38,7 @@ if($timeoutfix == true)
     flush();
     session_write_close();
     if($sendtimeoutwait==true) {
-        cURLPost($_GET["response_url"], array("Content-Type: application/json"), "POST", array("parse" => "full", "response_type" => "ephemeral", "text" => "Please wait..."));
+        cURLPost($_GET["response_url"], array("Content-Type: application/json"), "POST", array("parse" => "full", "response_type" => "ephemeral", "text" => "Sending message."));
     }
 }
 //End timeout fix block
