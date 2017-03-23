@@ -67,14 +67,16 @@ function cURLPost($url, $header, $request, $postfieldspre)
 {
     global $debugmode; //Require global variable $debugmode from config.php
     $ch = curl_init(); //Initiate a curl session
-
+    $array = null;
     if(is_array($postfieldspre))
     {
         $postfields = json_encode($postfieldspre); //Format the array as JSON
+        $array = true;
     }
     else
     {
         $postfields = $postfieldspre;
+        $array = false;
     }
 
     //Same as previous curl array but includes required information for PATCH commands.
@@ -108,7 +110,18 @@ function cURLPost($url, $header, $request, $postfieldspre)
     {
         return null;
     }
-    $jsonDecode = json_decode($curlBodyTCmd); //Decode the JSON returned by the CW API.
+
+    if(!$array) //Twilio catch
+    {
+        $xml = simplexml_load_string($curlBodyTCmd, "SimpleXMLElement", LIBXML_NOCDATA);
+        $json = json_encode($xml);
+        $jsonDecode = json_decode($json,TRUE);
+    }
+    else
+    {
+        $jsonDecode = json_decode($curlBodyTCmd); //Decode the JSON returned by the CW API.
+    }
+
 
     if(array_key_exists("code",$jsonDecode)) { //Check if array contains error code
         if($jsonDecode->code == "NotFound") { //If error code is NotFound
@@ -130,6 +143,10 @@ function cURLPost($url, $header, $request, $postfieldspre)
         $errors = $jsonDecode->errors; //Make array easier to access.
 
         die("ConnectWise Error: " . $errors[0]->message); //Return CW error
+    }
+    if(array_key_exists("RestException",$jsonDecode)) // Catch for Twilio errors
+    {
+        die("Error " . $jsonDecode["RestException"]["Message"] . "(" . $jsonDecode["RestException"]["Code"] . "): " . $jsonDecode["RestException"]["Detail"]);
     }
 
     return $jsonDecode;
