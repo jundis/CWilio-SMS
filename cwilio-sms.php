@@ -9,6 +9,7 @@ require_once 'sms-functions.php';
 
 if(empty($_GET['token']) || ($_GET['token'] != $smsslacktoken)) die("Slack token invalid."); //If Slack token is not correct, kill the connection. This allows only Slack to access the page for security purposes.
 if(empty($_GET['text'])) die("No text provided."); //If there is no text added, kill the connection.
+if($_GET['channel'] != $slackchannel) die("Invalid channel");
 $exploded = explode(" ",$_GET['text']); //Explode the string attached to the slash command for use in variables.
 
 if(!is_numeric($exploded[0])) {
@@ -54,6 +55,13 @@ $message = implode(" ",$exploded);
 
 $postdata = "To=" . urlencode($phonenumber) . "&From=" . urlencode($countrycode . $twilionumber) . "&Body=" . urlencode($message);
 
-$test = cURLPost("https://api.twilio.com/2010-04-01/Accounts/$accountsid/Messages",$twilHeader,"POST",$postdata);
+$twilresponse = cURLPost("https://api.twilio.com/2010-04-01/Accounts/$accountsid/Messages",$twilHeader,"POST",$postdata);
 
-var_dump($test);
+if(array_key_exists("Message",$twilresponse))
+{
+    if ($timeoutfix == true) {
+        cURLPost($_GET["response_url"], array("Content-Type: application/json"), "POST", array("parse" => "full", "response_type" => "ephemeral","text" => "Your message has been sent to $phonenumber."));
+    } else {
+        die("Your message has been sent to $phonenumber."); //Return success
+    }
+}
