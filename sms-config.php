@@ -7,6 +7,7 @@ $cwbranch = "v4_6_release"; //Set to the portion of your CW URL shown here: http
 $companyname = "company"; //Set your company name from Connectwise. This is the company name field from login.
 $apipublickey = "Connectwise Public Key"; //Public API key
 $apiprivatekey = "Connectwise Private Key"; //Private API key
+$phonetype = "Cell"; //Limit SMS to these numbers
 
 //Slack Configuration
 $smsslacktoken = "Token here"; //Set token from the Slack slash command screen.
@@ -41,3 +42,8 @@ $cwHeader = array("Authorization: Basic ". $authorization);
 $slackHeader = array("Content-Type: application/json");
 
 $twilHeader = array("application/x-www-form-urlencoded","Authentication: Basic " . base64_encode($accountsid . ":" . $authtoken));
+
+if($debugmode == true)
+{
+    $timeoutfix = false;
+}

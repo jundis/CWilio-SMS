@@ -43,9 +43,31 @@ if($timeoutfix == true)
 }
 //End timeout fix block
 
+$phonenumber = NULL;
+
 if(strlen($exploded[0]) <= 9)
 {
     // TO DO, this is a ticket
+    $ticketurl = $connectwise . "/$cwbranch/apis/3.0/service/tickets/" . $exploded[0];
+    $ticketdata = cURL($ticketurl,$cwHeader);
+    $contacturl = $ticketdata->contact->_info->contact_href;
+    $contactdata = cURL($contacturl,$cwHeader);
+    foreach($contactdata->communicationItems as $type)
+    {
+        if($type->type->name == $phonetype)
+        {
+            $phonenumber = $countrycode . $type->value;
+        }
+    }
+    if($phonenumber == NULL)
+    {
+        if ($timeoutfix == true) {
+            cURLPost($_GET["response_url"], array("Content-Type: application/json"), "POST", array("parse" => "full", "response_type" => "ephemeral","text" => "User does not have a cell phone number in ConnectWise."));
+        } else {
+            die("User does not have a cell phone number in ConnectWise.");
+        }
+        die();
+    }
 }
 else
 {
