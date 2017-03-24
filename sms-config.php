@@ -22,6 +22,12 @@ $authtoken = "Token here"; //Find this on https://www.twilio.com/user/account/
 $twilionumber = "Phone here"; //A Twilio phone number you control to send messages from. Enter without symbols or country code. E.x. 5558675309
 $countrycode = "+1"; //If not in the US, change this to your country code.
 
+//MySQL Configuration
+$mysqlserver = "127.0.0.1"; //Database server address
+$mysqlusername = "root"; //Database username
+$mysqlpassword = ""; //Database password
+$mysqldatabase = "cwiliosms"; //Database name
+
 // Other
 $helpurl = "https://github.com/jundis/CWilio-SMS"; // Change to your documentation on this command.
 $debugmode = true; // Only use if instructed, or you're curious.
@@ -47,3 +53,47 @@ if($debugmode == true)
 {
     $timeoutfix = false;
 }
+
+$mysql = mysqli_connect($mysqlserver, $mysqlusername, $mysqlpassword);
+if (!$mysql)
+{
+    die("Connection error: " . mysqli_connect_error());
+}
+
+$db = mysqli_select_db($mysql, $mysqldatabase);
+if(!$db)
+{
+    $sql = "CREATE DATABASE " . $mysqldatabase;
+    if(mysqli_query($mysql, $sql))
+    {
+        $db = mysqli_select_db($mysql, $mysqldatabase);
+    }
+    else
+    {
+        die("Database Error: " . mysqli_error($mysql));
+    }
+}
+
+$sql = "SELECT id FROM logging";
+$result = mysqli_query($mysql, $sql);
+
+if(empty($result)) {
+    $sql = "CREATE TABLE logging (id INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY, whofrom VARCHAR(25) NOT NULL, whoto VARCHAR(25) NOT NULL, message VARCHAR(200) NOT NULL, date VARCHAR(50) NOT NULL)";
+
+    if (!mysqli_query($mysql, $sql)) {
+        die("Companies Table Error: " . mysqli_error($mysql));
+    }
+}
+
+$sql = "SELECT id FROM threads";
+$result = mysqli_query($mysql, $sql);
+
+if(empty($result)) {
+    $sql = "CREATE TABLE threads (id INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY, phonenumber VARCHAR(12) NOT NULL, lastmessage VARCHAR(50) NOT NULL, threadid VARCHAR(50) NOT NULL)";
+
+    if (!mysqli_query($mysql, $sql)) {
+        die("Companies Table Error: " . mysqli_error($mysql));
+    }
+}
+
+mysqli_close($mysql);

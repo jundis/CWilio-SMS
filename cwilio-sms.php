@@ -47,7 +47,6 @@ $phonenumber = NULL;
 
 if(strlen($exploded[0]) <= 9)
 {
-    // TO DO, this is a ticket
     $ticketurl = $connectwise . "/$cwbranch/apis/3.0/service/tickets/" . $exploded[0];
     $ticketdata = cURL($ticketurl,$cwHeader);
     $contacturl = $ticketdata->contact->_info->contact_href;
@@ -80,6 +79,22 @@ $message = implode(" ",$exploded);
 $postdata = "To=" . urlencode($phonenumber) . "&From=" . urlencode($countrycode . $twilionumber) . "&Body=" . urlencode($message);
 
 $twilresponse = cURLPost("https://api.twilio.com/2010-04-01/Accounts/$accountsid/Messages",$twilHeader,"POST",$postdata);
+
+$mysql = mysqli_connect($mysqlserver, $mysqlusername, $mysqlpassword, $mysqldatabase);
+if (!$mysql)
+{
+    die("Connection error: " . mysqli_connect_error());
+}
+
+$val1 = mysqli_real_escape_string($mysql,$_GET['user_name']);
+$val2 = mysqli_real_escape_string($mysql,$phonenumber);
+$val3 = mysqli_real_escape_string($mysql,$message);
+$val4 = date("m-d-Y H:i:sa",strtotime("Now"));
+$sql = "INSERT INTO logging (whofrom, whoto, message, date) VALUES ('" . $val1 . "', '" . $val2 . "', '" . $val3 . "', '" . $val4 . "')";
+if (!mysqli_query($mysql,$sql))
+{
+    die("Error: " . mysqli_error($mysql));
+}
 
 if(array_key_exists("Message",$twilresponse))
 {

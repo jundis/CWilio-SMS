@@ -42,3 +42,19 @@ $postfields = array(
     );
 
 cURLPost($slackwebhook, $slackHeader, "POST", $postfields);
+
+$mysql = mysqli_connect($mysqlserver, $mysqlusername, $mysqlpassword, $mysqldatabase);
+if (!$mysql)
+{
+    die("Connection error: " . mysqli_connect_error());
+}
+
+$val1 = mysqli_real_escape_string($mysql,$data["From"]);
+$val2 = mysqli_real_escape_string($mysql,"Slack");
+$val3 = mysqli_real_escape_string($mysql,$data["Body"]);
+$val4 = date("m-d-Y H:i:sa",strtotime("Now"));
+$sql = "INSERT INTO logging (whofrom, whoto, message, date) VALUES ('" . $val1 . "', '" . $val2 . "', '" . $val3 . "', '" . $val4 . "')";
+if (!mysqli_query($mysql,$sql))
+{
+    die("Error: " . mysqli_error($mysql));
+}
