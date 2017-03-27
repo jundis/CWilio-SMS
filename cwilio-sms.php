@@ -17,6 +17,60 @@ if(!is_numeric($exploded[0])) {
     if ($exploded[0]=="help") {
         die(json_encode(array("parse" => "full", "response_type" => "in_channel","text" => "Please visit " . $helpurl . " for more help information","mrkdwn"=>true)));
     }
+    else if ($exploded[0]=="attach")
+    {
+
+    }
+    else if ($exploded[0]=="stop"||$exploded[0]=="detach")
+    {
+        if(!array_key_exists(1,$exploded))
+        {
+            die("No ticket or phone provided");
+        }
+        if(strlen($exploded[0]) <= 8)
+        {
+            $val1 = mysqli_real_escape_string($mysql,$_GET['user_name']);
+            $sql = "SELECT * FROM threads WHERE ticketnumber='" . $val1 . "'";
+            $result = mysqli_query($mysql, $sql); //Run result
+            if(mysqli_num_rows($result) > 0) //If there were too many rows matching query
+            {
+                while($row = mysqli_fetch_assoc($result))
+                {
+                    $sql = "DELETE FROM threads WHERE id=" . $row["id"];
+                    mysqli_query($mysql,$sql);
+                }
+                die("Records deleted.");
+            }
+            else
+            {
+                die("No threads in database matching that ticket number.");
+            }
+        }
+        else
+        {
+            $sql = "SELECT * FROM threads";
+            $result = mysqli_query($mysql, $sql); //Run result
+            if(mysqli_num_rows($result) > 0) //If there were too many rows matching query
+            {
+                while($row = mysqli_fetch_assoc($result))
+                {
+                    $now = strtotime("now");
+                    $eighthours = strtotime("-8 hours");
+                    if($row["lastmessage"]<=$eighthours)
+                    {
+                        $sql = "DELETE FROM threads WHERE id=" . $row["id"];
+                        mysqli_query($mysql,$sql);
+                    }
+                }
+                die("Records deleted.");
+            }
+            else
+            {
+                die("No threads in database matching that ticket number.");
+            }
+        }
+        die();
+    }
     else //Else search CW for name
     {
         // TO DO
@@ -46,7 +100,7 @@ if($timeoutfix == true)
 $phonenumber = NULL;
 $ticketnumber = 0;
 
-if(strlen($exploded[0]) <= 9)
+if(strlen($exploded[0]) <= 8)
 {
     $ticketurl = $connectwise . "/$cwbranch/apis/3.0/service/tickets/" . $exploded[0];
     $ticketdata = cURL($ticketurl,$cwHeader);
