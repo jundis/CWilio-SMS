@@ -89,7 +89,7 @@ $sql = "SELECT id FROM threads";
 $result = mysqli_query($mysql, $sql);
 
 if(empty($result)) {
-    $sql = "CREATE TABLE threads (id INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY, phonenumber VARCHAR(12) NOT NULL, lastmessage VARCHAR(50) NOT NULL, threadid VARCHAR(50) NOT NULL, ticketnumber VARCHAR(10))";
+    $sql = "CREATE TABLE threads (id INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY, phonenumber VARCHAR(12) NOT NULL, lastmessage VARCHAR(50) NOT NULL, ticketnumber VARCHAR(10))";
 
     if (!mysqli_query($mysql, $sql)) {
         die("Companies Table Error: " . mysqli_error($mysql));

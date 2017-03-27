@@ -44,6 +44,7 @@ if($timeoutfix == true)
 //End timeout fix block
 
 $phonenumber = NULL;
+$ticketnumber = 0;
 
 if(strlen($exploded[0]) <= 9)
 {
@@ -67,6 +68,7 @@ if(strlen($exploded[0]) <= 9)
         }
         die();
     }
+    $ticketnumber = $exploded[0];
 }
 else
 {
@@ -94,6 +96,57 @@ $sql = "INSERT INTO logging (whofrom, whoto, message, date) VALUES ('" . $val1 .
 if (!mysqli_query($mysql,$sql))
 {
     die("Error: " . mysqli_error($mysql));
+}
+
+$sql = "SELECT * FROM threads WHERE phonenumber='" . $val2 . "'";
+$result = mysqli_query($mysql, $sql); //Run result
+$rowcount = mysqli_num_rows($result);
+if($rowcount > 1) //If there were too many rows matching query
+{
+    die("Error: too many threads somehow?"); //This should NEVER happen.
+}
+else if ($rowcount == 1) //If exactly 1 row was found.
+{
+    $row = mysqli_fetch_assoc($result); //Row association.
+
+    $thread = $row["id"];
+    if($ticketnumber == 0)
+    {
+        $ticketnumber = $row["ticketnumber"];
+    }
+}
+else
+{
+    $thread = 0;
+}
+
+if($thread==0)
+{
+    $val5 = mysqli_real_escape_string($mysql,$ticketnumber);
+    $val6 = strtotime("Now");
+    $sql = "INSERT INTO threads (phonenumber, lastmessage, ticketnumber) VALUES ('" . $val2 . "', '" . $val6 . "', '" . $val5 . "')";
+    if (!mysqli_query($mysql,$sql))
+    {
+        die("Error: " . mysqli_error($mysql));
+    }
+}
+else
+{
+    $val5 = mysqli_real_escape_string($mysql,$thread);
+    $val6 = strtotime("Now");
+    $sql = "UPDATE threads SET lastmessage='" . $val6 . "' WHERE id=" . $val5;
+    if (!mysqli_query($mysql,$sql))
+    {
+        die("Error: " . mysqli_error($mysql));
+    }
+}
+
+if($ticketnumber != 0)
+{
+    $noteurl = $connectwise . "/$cwbranch/apis/3.0/service/tickets/" . $ticketnumber . "/notes";
+    $postfieldspre = array("internalAnalysisFlag" => "True", "text" => "New SMS from " . $_GET["user_name"] . " to " . $phonenumber . ": " . $message);
+    $dataTNotes = cURLPost($noteurl, $cwPostHeader, "POST", $postfieldspre);
+
 }
 
 if(array_key_exists("Message",$twilresponse))
