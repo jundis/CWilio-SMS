@@ -19,17 +19,84 @@ if(!is_numeric($exploded[0])) {
     }
     else if ($exploded[0]=="attach")
     {
-
+        $mysql = mysqli_connect($mysqlserver, $mysqlusername, $mysqlpassword, $mysqldatabase);
+        if (!$mysql)
+        {
+            die("Connection error: " . mysqli_connect_error());
+        }
+        if(!array_key_exists(1,$exploded))
+        {
+            die("No ticket number provided. /sms attach <ticket> <phone>");
+        }
+        if(!array_key_exists(2,$exploded))
+        {
+            die("No phone number provided. /sms attach <ticket> <phone>");
+        }
+        if(strlen($exploded[1]) <= 8)
+        {
+            $val1 = $countrycode . $exploded[2];
+            $val1 = mysqli_real_escape_string($mysql,$val1);
+            $sql = "SELECT * FROM threads WHERE phonenumber='" . $val1 . "'";
+            $result = mysqli_query($mysql, $sql); //Run result
+            if(mysqli_num_rows($result) > 0) //If there were too many rows matching query
+            {
+                while($row = mysqli_fetch_assoc($result))
+                {
+                    $val5 = mysqli_real_escape_string($mysql,$row["id"]);
+                    $val6 = mysqli_real_escape_string($mysql,$exploded[1]);
+                    $sql = "UPDATE threads SET ticketnumber='" . $val6 . "' WHERE id=" . $val5;
+                    if (!mysqli_query($mysql,$sql))
+                    {
+                        die("Error: " . mysqli_error($mysql));
+                    }
+                }
+                die("Records attached.");
+            }
+            else
+            {
+                die("No threads in database matching that phone number.");
+            }
+        }
+        else
+        {
+            $val1 = $countrycode . $exploded[1];
+            $val1 = mysqli_real_escape_string($mysql,$val1);
+            $sql = "SELECT * FROM threads WHERE phonenumber='" . $val1 . "'";
+            $result = mysqli_query($mysql, $sql); //Run result
+            if(mysqli_num_rows($result) > 0) //If there were too many rows matching query
+            {
+                while($row = mysqli_fetch_assoc($result))
+                {
+                    $val5 = mysqli_real_escape_string($mysql,$row["id"]);
+                    $val6 = mysqli_real_escape_string($mysql,$exploded[2]);
+                    $sql = "UPDATE threads SET ticketnumber='" . $val6 . "' WHERE id=" . $val5;
+                    if (!mysqli_query($mysql,$sql))
+                    {
+                        die("Error: " . mysqli_error($mysql));
+                    }
+                }
+                die("Records attached.");
+            }
+            else
+            {
+                die("No threads in database matching that phone number.");
+            }
+        }
     }
     else if ($exploded[0]=="stop"||$exploded[0]=="detach")
     {
+        $mysql = mysqli_connect($mysqlserver, $mysqlusername, $mysqlpassword, $mysqldatabase);
+        if (!$mysql)
+        {
+            die("Connection error: " . mysqli_connect_error());
+        }
         if(!array_key_exists(1,$exploded))
         {
             die("No ticket or phone provided");
         }
-        if(strlen($exploded[0]) <= 8)
+        if(strlen($exploded[1]) <= 8)
         {
-            $val1 = mysqli_real_escape_string($mysql,$_GET['user_name']);
+            $val1 = mysqli_real_escape_string($mysql,$exploded[1]);
             $sql = "SELECT * FROM threads WHERE ticketnumber='" . $val1 . "'";
             $result = mysqli_query($mysql, $sql); //Run result
             if(mysqli_num_rows($result) > 0) //If there were too many rows matching query
@@ -48,28 +115,24 @@ if(!is_numeric($exploded[0])) {
         }
         else
         {
-            $sql = "SELECT * FROM threads";
+            $val1 = $countrycode . $exploded[1];
+            $val1 = mysqli_real_escape_string($mysql,$val1);
+            $sql = "SELECT * FROM threads WHERE phonenumber='" . $val1 . "'";
             $result = mysqli_query($mysql, $sql); //Run result
             if(mysqli_num_rows($result) > 0) //If there were too many rows matching query
             {
                 while($row = mysqli_fetch_assoc($result))
                 {
-                    $now = strtotime("now");
-                    $eighthours = strtotime("-8 hours");
-                    if($row["lastmessage"]<=$eighthours)
-                    {
-                        $sql = "DELETE FROM threads WHERE id=" . $row["id"];
-                        mysqli_query($mysql,$sql);
-                    }
+                    $sql = "DELETE FROM threads WHERE id=" . $row["id"];
+                    mysqli_query($mysql,$sql);
                 }
                 die("Records deleted.");
             }
             else
             {
-                die("No threads in database matching that ticket number.");
+                die("No threads in database matching that phone number.");
             }
         }
-        die();
     }
     else //Else search CW for name
     {
