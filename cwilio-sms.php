@@ -12,6 +12,9 @@ if(empty($_GET['text'])) die("No text provided."); //If there is no text added, 
 if($_GET['channel_name'] != $slackchannel) die("Invalid channel");
 $exploded = explode(" ",$_GET['text']); //Explode the string attached to the slash command for use in variables.
 
+$phonenumber = NULL;
+$ticketnumber = 0;
+
 if(!is_numeric($exploded[0])) {
     //Check to see if the first command in the text array is actually help, if so redirect to help webpage detailing slash command use.
     if ($exploded[0]=="help") {
@@ -136,7 +139,31 @@ if(!is_numeric($exploded[0])) {
     }
     else //Else search CW for name
     {
-        // TO DO
+        $split = explode("|",$_GET["text"]);
+        $contact = explode(" ",$split[0]);
+
+        if(!array_key_exists(1,$split)) die("Must contain contact and message separated by pipe symbol. E.x. /sms John Doe|Hello!");
+        if(!array_key_exists(1,$contact)) die("Must include first and last name. E.x. /sms John Doe|Hello!");
+
+        $contacturl = $connectwise . "/$cwbranch/apis/3.0/company/contacts?conditions=inactiveFlag=False%20and%20firstName%20like%20%27" . $contact[0] . "%27%20and%20lastName%20like%20%27" . $contact[1] . "%27";
+
+        $contactdata = cURL($contacturl,$cwHeader);
+
+        if(empty($contactdata)) die("No contact matching " . $split[0] . " found.");
+        $contactdata = $contactdata[0];
+        foreach($contactdata->communicationItems as $type)
+        {
+            if($type->type->name == $phonetype)
+            {
+                $phonenumber = $countrycode . $type->value;
+            }
+        }
+        if($phonenumber == NULL)
+        {
+            die("User does not have a cell phone number in ConnectWise.");
+        }
+
+        $message = $split[1];
     }
 }
 
@@ -160,40 +187,40 @@ if($timeoutfix == true)
 }
 //End timeout fix block
 
-$phonenumber = NULL;
-$ticketnumber = 0;
-
-if(strlen($exploded[0]) <= 8)
+if($phonenumber == NULL)
 {
-    $ticketurl = $connectwise . "/$cwbranch/apis/3.0/service/tickets/" . $exploded[0];
-    $ticketdata = cURL($ticketurl,$cwHeader);
-    $contacturl = $ticketdata->contact->_info->contact_href;
-    $contactdata = cURL($contacturl,$cwHeader);
-    foreach($contactdata->communicationItems as $type)
+    if(strlen($exploded[0]) <= 8)
     {
-        if($type->type->name == $phonetype)
+        $ticketurl = $connectwise . "/$cwbranch/apis/3.0/service/tickets/" . $exploded[0];
+        $ticketdata = cURL($ticketurl,$cwHeader);
+        $contacturl = $ticketdata->contact->_info->contact_href;
+        $contactdata = cURL($contacturl,$cwHeader);
+        foreach($contactdata->communicationItems as $type)
         {
-            $phonenumber = $countrycode . $type->value;
+            if($type->type->name == $phonetype)
+            {
+                $phonenumber = $countrycode . $type->value;
+            }
         }
+        if($phonenumber == NULL)
+        {
+            if ($timeoutfix == true) {
+                cURLPost($_GET["response_url"], array("Content-Type: application/json"), "POST", array("parse" => "full", "response_type" => "ephemeral","text" => "User does not have a cell phone number in ConnectWise."));
+            } else {
+                die("User does not have a cell phone number in ConnectWise.");
+            }
+            die();
+        }
+        $ticketnumber = $exploded[0];
     }
-    if($phonenumber == NULL)
+    else
     {
-        if ($timeoutfix == true) {
-            cURLPost($_GET["response_url"], array("Content-Type: application/json"), "POST", array("parse" => "full", "response_type" => "ephemeral","text" => "User does not have a cell phone number in ConnectWise."));
-        } else {
-            die("User does not have a cell phone number in ConnectWise.");
-        }
-        die();
+        $phonenumber = $countrycode . preg_replace("/[^0-9]/", "",$exploded[0]);
     }
-    $ticketnumber = $exploded[0];
-}
-else
-{
-    $phonenumber = $countrycode . preg_replace("/[^0-9]/", "",$exploded[0]);
-}
 
-unset($exploded[0]);
-$message = implode(" ",$exploded);
+    unset($exploded[0]);
+    $message = implode(" ",$exploded);
+}
 
 $postdata = "To=" . urlencode($phonenumber) . "&From=" . urlencode($countrycode . $twilionumber) . "&Body=" . urlencode($message);
 
