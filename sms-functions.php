@@ -35,7 +35,10 @@ function cURL($url, $header)
     curl_close($ch); //Close the curl connection for cleanup.
 
     $jsonDecode = json_decode($curlBodyTData); //Decode the JSON returned by the CW API.
-
+    if($jsonDecode==NULL)
+    {
+        return $jsonDecode;
+    }
     if(array_key_exists("code",$jsonDecode)) { //Check if array contains error code
         if($jsonDecode->code == "NotFound") { //If error code is NotFound
             die("Connectwise record was not found."); //Report that the ticket was not found.
