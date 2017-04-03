@@ -47,7 +47,7 @@ $cwHeader = array("Authorization: Basic ". $authorization);
 
 $slackHeader = array("Content-Type: application/json");
 
-$twilHeader = array("application/x-www-form-urlencoded","Authentication: Basic " . base64_encode($accountsid . ":" . $authtoken));
+$twilHeader = array("application/x-www-form-urlencoded","Authorization: Basic " . base64_encode($accountsid . ":" . $authtoken));
 
 if($debugmode == true)
 {
