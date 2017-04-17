@@ -1,4 +1,6 @@
 # CWilio-SMS
+
+[![Join the chat at https://gitter.im/CWilio-SMS/Lobby](https://badges.gitter.im/CWilio-SMS/Lobby.svg)](https://gitter.im/CWilio-SMS/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 A conglomeration of my CWilio and CWSlack repositories to create a ConnectWise integrated Slack SMS system using the Twilio API
 
 Using just the Twilio/Slack part of this may be helpful, but it really shines once you integrate ConnectWise as it will then log the conversation to the internal notes of a ticket.
