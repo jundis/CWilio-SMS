@@ -288,7 +288,7 @@ else
 if($ticketnumber != 0)
 {
     $noteurl = $connectwise . "/$cwbranch/apis/3.0/service/tickets/" . $ticketnumber . "/notes";
-    $postfieldspre = array("internalAnalysisFlag" => "True", "text" => "New SMS from " . $_GET["user_name"] . " to " . $phonenumber . ": " . $message);
+    $postfieldspre = array("detailDescriptionFlag" => "True", "text" => "New SMS from " . $_GET["user_name"] . " to " . $phonenumber . ": " . $message);
     $dataTNotes = cURLPost($noteurl, $cwPostHeader, "POST", $postfieldspre);
 
 }
