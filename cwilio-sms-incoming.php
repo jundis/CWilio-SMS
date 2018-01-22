@@ -22,6 +22,7 @@ if($data["To"] != $countrycode . $twilionumber) die("Invalid phone to message.")
 //Variables
 $slackperson = $data["From"];
 $userphone = $data["From"];
+$companyid = 0;
 while(strlen($userphone) >= 11)
 {
     $userphone = substr($userphone, 1);
@@ -33,6 +34,8 @@ $contact = cURL($contacturl,$cwHeader);
 if ($contact != null) {
     $contact = $contact[0];
     $slackperson = $contact->firstName . " " . $contact->lastName . " (" . $data["From"] . ")";
+    $companyid = $contact->company->id;
+    $contactid = $contact->id;
 }
 
 $postfields = array(
@@ -85,6 +88,49 @@ else
 
 if($thread==0)
 {
+    if($companyid==0)
+    {
+        $ticketpostarray = array(
+            "summary" => "New SMS Ticket from " . $slackperson,
+            "company" => array(
+                "id" => $dumpcompany
+            ),
+            "initialDescription" => $data["Body"],
+            "initialInternalAnalysis" => "Ticket submitted by " . $data["From"] . " to Slack. Matched to the contact record if possible."
+        );
+    }
+    $ticketpostarray = array(
+        "summary" => "New SMS Ticket from " . $slackperson,
+        "company" => array(
+            "id" => $companyid
+        ),
+        "contact" => array(
+            "id" => $contactid
+        ),
+        "initialDescription" => $data["Body"],
+        "initialInternalAnalysis" => "Ticket submitted by " . $data["From"] . " to Slack. Matched to the contact record if possible."
+    );
+
+    $dataTCmd = cURLPost( //Function for POST requests in cURL
+        $connectwise . "/$cwbranch/apis/3.0/service/tickets", //URL
+        $cwPostHeader, //Header
+        "POST", //Request type
+        $ticketpostarray
+    );
+
+    if(array_key_exists("id",$dataTCmd))
+    {
+        $ticketnumber = $dataTCmd->id;
+
+        $postfields = array(
+            "channel" => "#" . $slackchannel,
+            "username" => $slackperson,
+            "text" => "Ticket #" . $ticketnumber . " created from this message."
+        );
+
+        cURLPost($slackwebhook, $slackHeader, "POST", $postfields);
+    }
+
     $val5 = mysqli_real_escape_string($mysql,$ticketnumber);
     $val6 = strtotime("Now");
     $sql = "INSERT INTO threads (phonenumber, lastmessage, ticketnumber) VALUES ('" . $val1 . "', '" . $val6 . "', '" . $val5 . "')";
@@ -92,6 +138,8 @@ if($thread==0)
     {
         die("Error: " . mysqli_error($mysql));
     }
+
+    die();
 }
 else
 {
@@ -107,7 +155,7 @@ else
 if($ticketnumber != 0)
 {
     $noteurl = $connectwise . "/$cwbranch/apis/3.0/service/tickets/" . $ticketnumber . "/notes";
-    $postfieldspre = array("internalAnalysisFlag" => "True", "text" => "New SMS from " . $data["From"] . " to Slack: " . $data["Body"]);
+    $postfieldspre = array("detailDescriptionFlag" => "True", "text" => "New SMS from " . $data["From"] . " to Slack: " . $data["Body"]);
     $dataTNotes = cURLPost($noteurl, $cwPostHeader, "POST", $postfieldspre);
 
 }

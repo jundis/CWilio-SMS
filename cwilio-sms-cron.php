@@ -20,7 +20,6 @@ if(mysqli_num_rows($result) > 0) //If there were too many rows matching query
 {
     while($row = mysqli_fetch_assoc($result))
     {
-        $now = strtotime("now");
         $eighthours = strtotime("-8 hours");
         if($row["lastmessage"]<=$eighthours)
         {
