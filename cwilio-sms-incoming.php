@@ -155,7 +155,7 @@ else
 if($ticketnumber != 0)
 {
     $noteurl = $connectwise . "/$cwbranch/apis/3.0/service/tickets/" . $ticketnumber . "/notes";
-    $postfieldspre = array("detailDescriptionFlag" => "True", "text" => "New SMS from " . $data["From"] . " to Slack: " . $data["Body"]);
+    $postfieldspre = array("detailDescriptionFlag" => "True", "customerUpdatedFlag" => "True", "text" => "New SMS from " . $data["From"] . " to Slack: " . $data["Body"]);
     $dataTNotes = cURLPost($noteurl, $cwPostHeader, "POST", $postfieldspre);
 
 }
