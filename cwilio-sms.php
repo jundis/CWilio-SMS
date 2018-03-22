@@ -222,6 +222,16 @@ if($phonenumber == NULL)
     $message = implode(" ",$exploded);
 }
 
+$internal = 0;
+$securestring = strtolower(explode(" ",$message)[0]);
+if($securestring == "test" || $securestring == "secure" || $securestring == "encrypt" || $securestring == "encryption" || $securestring == "internal" || $securestring == "encrypted")
+{
+    $internal = 1;
+    $tempmessage = explode(" ",$message);
+    unset($tempmessage[0]);
+    $message = implode(" ",$tempmessage);
+}
+
 $postdata = "To=" . urlencode($phonenumber) . "&From=" . urlencode($countrycode . $twilionumber) . "&Body=" . urlencode($message);
 
 $twilresponse = cURLPost("https://api.twilio.com/2010-04-01/Accounts/$accountsid/Messages",$twilHeader,"POST",$postdata);
@@ -288,7 +298,11 @@ else
 if($ticketnumber != 0)
 {
     $noteurl = $connectwise . "/$cwbranch/apis/3.0/service/tickets/" . $ticketnumber . "/notes";
-    $postfieldspre = array("detailDescriptionFlag" => "True", "text" => "New SMS from " . $_GET["user_name"] . " to " . $phonenumber . ": " . $message);
+    $postfieldspre = array("text" => "New SMS from " . $_GET["user_name"] . " to " . $phonenumber . ": " . $message);
+    if($internal==1)
+        $postfieldspre["internalAnalysisFlag"] = "True";
+    else
+        $postfieldspre["detailDescriptionFlag"] = "True";
     $dataTNotes = cURLPost($noteurl, $cwPostHeader, "POST", $postfieldspre);
 
 }
