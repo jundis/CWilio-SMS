@@ -5,6 +5,9 @@ Using just the Twilio/Slack part of this may be helpful, but it really shines on
 
 Example pictures: http://imgur.com/a/SzMzk
 
+
+#### Note: This project is currently being maintained for bugs only, all further new feature development is being done on the hosted successor at https://mspic.io which contains CWilio-SMS along with CWSlack and new functionality
+
 # Installation
 
 This assumes Twilio, ConnectWise, and Slack are functional and ready to go.
