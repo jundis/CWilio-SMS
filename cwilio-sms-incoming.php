@@ -88,7 +88,7 @@ else
 
 if($thread==0)
 {
-    if($companyid==0)
+    if($companyid==0 || !isset($contactid))
     {
         $ticketpostarray = array(
             "summary" => "New SMS Ticket from " . $slackperson,
@@ -96,20 +96,23 @@ if($thread==0)
                 "id" => $dumpcompany
             ),
             "initialDescription" => $data["Body"],
-            "initialInternalAnalysis" => "Ticket submitted by " . $data["From"] . " to Slack. Matched to the contact record if possible."
+            "initialInternalAnalysis" => "Ticket submitted by " . $data["From"] . " to Slack. We were unable to match this to a contact record."
         );
     }
-    $ticketpostarray = array(
-        "summary" => "New SMS Ticket from " . $slackperson,
-        "company" => array(
-            "id" => $companyid
-        ),
-        "contact" => array(
-            "id" => $contactid
-        ),
-        "initialDescription" => $data["Body"],
-        "initialInternalAnalysis" => "Ticket submitted by " . $data["From"] . " to Slack. Matched to the contact record if possible."
-    );
+	else
+	{
+		$ticketpostarray = array(
+			"summary" => "New SMS Ticket from " . $slackperson,
+			"company" => array(
+				"id" => $companyid
+			),
+			"contact" => array(
+				"id" => $contactid
+			),
+			"initialDescription" => $data["Body"],
+			"initialInternalAnalysis" => "Ticket submitted by " . $data["From"] . " to Slack. Matched to the contact record if possible."
+		);
+	}
 
     $dataTCmd = cURLPost( //Function for POST requests in cURL
         $connectwise . "/$cwbranch/apis/3.0/service/tickets", //URL
