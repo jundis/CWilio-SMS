@@ -93,7 +93,7 @@ if($thread==0)
         $ticketpostarray = array(
             "summary" => "New SMS Ticket from " . $slackperson,
             "company" => array(
-                "id" => $dumpcompany
+                "name" => $dumpcompany
             ),
             "initialDescription" => $data["Body"],
             "initialInternalAnalysis" => "Ticket submitted by " . $data["From"] . " to Slack. We were unable to match this to a contact record."

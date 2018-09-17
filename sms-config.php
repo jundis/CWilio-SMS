@@ -8,7 +8,7 @@ $companyname = "company"; //Set your company name from Connectwise. This is the 
 $apipublickey = "Connectwise Public Key"; //Public API key
 $apiprivatekey = "Connectwise Private Key"; //Private API key
 $phonetype = "Cell"; //Limit SMS to these numbers
-$dumpcompany = 4; //Change to your "Catch All" company, for numbers that can't be identified for new tickets.
+$dumpcompany = "CatchAll"; //Change to your "Catch All" company, for numbers that can't be identified for new tickets.
 
 //Slack Configuration
 $smsslacktoken = "Token here"; //Set token from the Slack slash command screen.
